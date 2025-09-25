@@ -74,7 +74,7 @@ function App() {
     updateTasks(newTaskList);
   };
 
-  const handleAllRemoveTask = (tasksToRemove: Task[]) => {
+  const handleAllRemoveTask = () => {
     if (window.confirm(`完了済みタスクをすべて削除してもよいですか？`)) {
       const newTaskList = taskList.filter((t) => !t.isDone);
       updateTasks(newTaskList);

@@ -17,7 +17,6 @@ const TaskList = ({
   handleRemoveTask,
   handleAllRemoveTask,
 }: TaskListProps) => {
-  const doneTasks = taskList.filter((t) => t.isDone);
   const todoTasks = taskList.filter(({ isDone }) => !isDone);
   const displayTasks = taskList.filter(({ isDone }) => {
      if (filter === 'ALL') return true;
