@@ -16,6 +16,7 @@ function App() {
   const [category, setCategory] = useState<Category>('work');
   const [filter, setFilter] = useState<FilterType>('ALL');
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
   const safeSetInputTask = (v: string) => {
     if (error) setError(null);
     setInputTask(v);
@@ -58,7 +59,7 @@ function App() {
 
     const newTask: Task = {
       id: id,
-      name: inputTask,
+      name,
       isDone: false,
       priority,
       category,
@@ -98,6 +99,16 @@ function App() {
     }
   };
 
+  const normalize = (s: string) => s.trim().toLowerCase();
+
+  const filteredBySearch = taskList.filter(t =>
+    normalize(t.name).includes(normalize(search))
+  );
+
+  const visibleTasks = filteredBySearch.filter(t =>
+    filter === 'ALL' ? true : filter === 'DONE' ? t.isDone : !t.isDone
+  );
+
     return (
     <>
       <div className="todo">
@@ -114,8 +125,17 @@ function App() {
         {error && <p className="error">{error}</p>}
         <hr />
         <Filter onChange={setFilter} value={filter} />
+
+        <div style={{ margin: '8px 0' }}>
+        <input
+          placeholder="Search tasks..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        </div>
+
         <TaskList
-          taskList={taskList}
+          taskList={visibleTasks} 
           filter={filter}
           handleTaskChange={handleTaskChange}
           handleRemoveTask={handleRemoveTask}
