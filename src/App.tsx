@@ -15,6 +15,11 @@ function App() {
   const [priority, setPriority] = useState<Priority>('medium');
   const [category, setCategory] = useState<Category>('work');
   const [filter, setFilter] = useState<FilterType>('ALL');
+  const [error, setError] = useState<string | null>(null);
+  const safeSetInputTask = (v: string) => {
+    if (error) setError(null);
+    setInputTask(v);
+  };
 
   useEffect(() => {
   const items = localStorage.getItem('taskList');
@@ -40,6 +45,17 @@ function App() {
     e.preventDefault();
     if (inputTask === '') return;
 
+    const name = inputTask.trim();          
+    if (name === '') return;
+
+  const exists = taskList.some(
+    (t: Task) => (t.name as string).trim().toLowerCase() === name.toLowerCase()
+  );
+    if (exists) {
+      setError('同じ名前のタスクは追加できません');
+      return;
+    }
+
     const newTask: Task = {
       id: id,
       name: inputTask,
@@ -54,6 +70,7 @@ function App() {
     setInputTask('');
     setPriority('medium');
     setCategory('work');
+    setError(null);
   };
 
   const handleTaskChange = (taskId: number) => {
@@ -87,13 +104,14 @@ function App() {
         <Title str="ToDo App" />
         <AddTask
           inputTask={inputTask}
-          setInputTask={setInputTask}
+          setInputTask={safeSetInputTask} 
           handleSubmit={handleSubmit}
           priority={priority}
           setPriority={setPriority}
           category={category}
           setCategory={setCategory}
         />
+        {error && <p className="error">{error}</p>}
         <hr />
         <Filter onChange={setFilter} value={filter} />
         <TaskList
