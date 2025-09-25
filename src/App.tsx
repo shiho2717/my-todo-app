@@ -1,0 +1,113 @@
+import { useState, useEffect } from 'react';
+import type { FormEvent } from 'react';
+import './App.css';
+import Title from './components/Title';
+import AddTask from './components/AddTask';
+import Filter from './components/Filter';
+import TaskList from './components/TaskList';
+import type { Task, FilterType } from './types';
+import type { Priority, Category } from './types';
+
+function App() {
+  const [inputTask, setInputTask] = useState('');
+  const [taskList, setTaskList] = useState<Task[]>([]);
+  const [id, setId] = useState(1);
+  const [priority, setPriority] = useState<Priority>('medium');
+  const [category, setCategory] = useState<Category>('work');
+  const [filter, setFilter] = useState<FilterType>('ALL');
+
+  useEffect(() => {
+  const items = localStorage.getItem('taskList');
+  const currentId = localStorage.getItem('currentId');
+
+  if (items) {
+    const parsedItems: Task[] = JSON.parse(items);
+    setTaskList(parsedItems);
+  }
+  if (currentId) {
+    setId(Number(currentId));
+  }
+  }, []);
+
+  const updateTasks = (newTaskList: Task[]) => {
+    localStorage.setItem('taskList', JSON.stringify(newTaskList));
+    setTaskList(newTaskList);
+  };
+
+
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (inputTask === '') return;
+
+    const newTask: Task = {
+      id: id,
+      name: inputTask,
+      isDone: false,
+      priority,
+      category,
+      createdAt: new Date(),
+    };
+
+    updateTasks([...taskList, newTask]);
+    setId(id + 1);
+    setInputTask('');
+    setPriority('medium');
+    setCategory('work');
+  };
+
+  const handleTaskChange = (taskId: number) => {
+    const newTaskList = taskList.map((task) => {
+      if (task.id === taskId) {
+        return { ...task, isDone: !task.isDone };
+      }
+      return task;
+    });
+    updateTasks(newTaskList);
+  };
+
+
+  const handleRemoveTask = (taskId: number) => {
+    const newTaskList = taskList.filter(
+      (task) => task.id !== taskId
+    );
+    updateTasks(newTaskList);
+  };
+
+  const handleAllRemoveTask = (tasksToRemove: Task[]) => {
+    if (window.confirm(`完了済みタスクをすべて削除してもよいですか？`)) {
+      const newTaskList = taskList.filter((t) => !t.isDone);
+      updateTasks(newTaskList);
+    }
+  };
+
+    return (
+    <>
+      <div className="todo">
+        <Title str="ToDo App" />
+        <AddTask
+          inputTask={inputTask}
+          setInputTask={setInputTask}
+          handleSubmit={handleSubmit}
+          priority={priority}
+          setPriority={setPriority}
+          category={category}
+          setCategory={setCategory}
+        />
+        <hr />
+        <Filter onChange={setFilter} value={filter} />
+        <TaskList
+          taskList={taskList}
+          filter={filter}
+          handleTaskChange={handleTaskChange}
+          handleRemoveTask={handleRemoveTask}
+          handleAllRemoveTask={handleAllRemoveTask}
+        />
+      </div>
+    </>
+  );
+}
+
+
+
+export default App;
